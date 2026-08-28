@@ -1114,59 +1114,6 @@ Tabs.AimTab:Toggle({
     end
 })
 
-Tabs.y:Divider()
-Tabs.y:Input({
-    Title = "范围",
-    Value = "800",
-    Placeholder = "输入攻击范围数值",
-    Callback = function(input)
-        attackRange = tonumber(input) or 800
-    end
-})
-Tabs.y:Toggle({
-    Title = "范围",
-    Icon = "check",
-    Default = false,
-    Callback = function(enabled)
-        local RunService = game:GetService("RunService")
-        local Players = game:GetService("Players")
-        local lp = Players.LocalPlayer
-        local connection
-        attackRange = tonumber(attackRange) or 800
-
-        if enabled then
-            connection = RunService.RenderStepped:Connect(function()
-                if not lp.Character then return end
-                local raycastParams = RaycastParams.new()
-                raycastParams.FilterDescendantsInstances = {lp.Character}
-                raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-
-                local camera = workspace.CurrentCamera
-                local center = camera.ViewportSize / 2
-                local ray = camera:ViewportPointToRay(center.X, center.Y)
-                local hitResult = workspace:Raycast(ray.Origin, ray.Direction * attackRange, raycastParams)
-
-                if hitResult then
-                    local hitModel = hitResult.Instance:FindFirstAncestorWhichIsA("Model")
-                    for _,plr in Players:GetPlayers() do
-                        if plr ~= lp and plr.Character == hitModel then
-                            local hum = plr.Character:FindFirstChildOfClass("Humanoid")
-                            if hum and hum.Health > 0 then
-                                hum:TakeDamage(1)
-                            end
-                            break
-                        end
-                    end
-                end
-            end)
-        else
-            if connection then
-                connection:Disconnect()
-            end
-        end
-    end,
-})
-
 Tabs.AimTab:Toggle({
     Title = "自瞄(朝向最近玩家头部)",
     Icon = "check",
@@ -1580,4 +1527,4 @@ Tabs.XrayTab:Toggle({
     Callback = function(enabled)
         _G.TrackRainbow = enabled
     end
-})
+}) 
