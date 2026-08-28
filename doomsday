@@ -1,0 +1,398 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/lolssqa/rspy-but-back/releases/download/now/main.2.lua"))()
+local FLOW_SPEED = 5.5
+local BORDER_THICKNESS = 1.7
+local FIXED_FONT = Enum.Font.SourceSansBold
+local RainbowTheme = ColorSequence.new({
+	ColorSequenceKeypoint.new(0.00, Color3.fromHex("FF0000")),
+	ColorSequenceKeypoint.new(0.17, Color3.fromHex("FF9900")),
+	ColorSequenceKeypoint.new(0.33, Color3.fromHex("FFFF00")),
+	ColorSequenceKeypoint.new(0.50, Color3.fromHex("00FF00")),
+	ColorSequenceKeypoint.new(0.67, Color3.fromHex("00CCFF")),
+	ColorSequenceKeypoint.new(0.83, Color3.fromHex("6600FF")),
+	ColorSequenceKeypoint.new(1.00, Color3.fromHex("FF0099")),
+})
+local borderAnimation
+local borderInitialized = false
+
+function gradient(text, startColor, endColor)
+    local result = ""
+    local chars = {}
+    for uchar in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+        table.insert(chars, uchar)
+    end
+    local length = #chars
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+        local r = startColor.R + (endColor.R - startColor.R) * t
+        local g = startColor.G + (endColor.G - startColor.G) * t
+        local b = startColor.B + (endColor.B - startColor.B) * t
+        result = result .. string.format('<font color="rgb(%d,%d,%d)">%s</font>', 
+            math.floor(r * 255), math.floor(g * 255), math.floor(b * 255), chars[i])
+    end
+    return result
+end
+
+local function StartFontEnforcer()
+    if not Window or not Window.UIElements then 
+        task.wait(1)
+        if not Window or not Window.UIElements then return end
+    end  
+    local MainFrame = Window.UIElements.Main
+    local function setFont(instance)
+        if instance:IsA("TextLabel") or instance:IsA("TextButton") or instance:IsA("TextBox") then
+            pcall(function() 
+                instance.Font = FIXED_FONT 
+                instance.RichText = true
+            end)
+        end
+    end
+    for _, child in ipairs(MainFrame:GetDescendants()) do
+        setFont(child)
+    end
+    MainFrame.DescendantAdded:Connect(function(child)
+        setFont(child)
+    end)
+end
+local function createBorder(window)
+    if not window or not window.UIElements then
+        task.wait(1)
+        if not window or not window.UIElements then return nil end
+    end
+    local mainFrame = window.UIElements.Main
+    if not mainFrame then return nil end    
+    if mainFrame:FindFirstChild("FlowBorder") then return mainFrame.FlowBorder end    
+    if not mainFrame:FindFirstChildOfClass("UICorner") then
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 16)
+        corner.Parent = mainFrame
+    end    
+    local stroke = Instance.new("UIStroke")
+    stroke.Name = "FlowBorder"
+    stroke.Thickness = BORDER_THICKNESS
+    stroke.Color = Color3.new(1, 1, 1)
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.LineJoinMode = Enum.LineJoinMode.Round
+    stroke.Enabled = true
+    stroke.Parent = mainFrame    
+    local gradient = Instance.new("UIGradient")
+    gradient.Name = "StreamEffect"
+    gradient.Color = RainbowTheme
+    gradient.Rotation = 0
+    gradient.Parent = stroke    
+    return stroke
+end
+local function startBorderAnimation(window)
+    if not window or not window.UIElements then return nil end
+    local mainFrame = window.UIElements.Main
+    if not mainFrame then return nil end    
+    local stroke = mainFrame:FindFirstChild("FlowBorder")
+    if not stroke then return nil end    
+    local gradient = stroke:FindFirstChild("StreamEffect")
+    if not gradient then return nil end    
+    if borderAnimation then borderAnimation:Disconnect() borderAnimation = nil end    
+    local animation
+    animation = game:GetService("RunService").Heartbeat:Connect(function()
+        if not stroke or stroke.Parent == nil then
+            animation:Disconnect()
+            return
+        end
+        gradient.Rotation = (tick() * FLOW_SPEED * 20) % 360
+    end)
+    borderAnimation = animation
+    return animation
+end
+
+Window = WindUI:CreateWindow({
+    Title = gradient("鹿脚本｜游戏区", Color3.fromHex("#FF0000"), Color3.fromHex("#0099FF")),
+Author = gradient("作者:LY Team", Color3.fromHex("#9900FF"), Color3.fromHex("#FF0099")),
+    IconThemed = true,
+    Folder = "Atomic",
+   Transparent = true,
+    Theme = "Rainbow",
+    SideBarWidth = 120,
+    HideSearchBar = false,
+    ScrollBarEnabled = true,
+    Background = "rbxassetid://104488234583316",
+    BackgroundImageTransparency = 0.2,
+--    Background = "video:https://raw.githack.com/Potato5466794/LUAUmisc/refs/heads/main/Video_1770894406219_889.mp4",
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Callback = function()
+        end
+    },
+})
+
+task.spawn(function()
+    local toggle = false
+    while task.wait(0.12) do
+        toggle = not toggle
+        local curColor = toggle and Color3.new(1,0,0) or Color3.new(1,1,1)
+
+        Window:EditOpenButton({
+            Title = "67 鹿脚本 67",
+            Icon = "rbxassetid://135461405245048",
+            CornerRadius = UDim.new(1, 0),
+            StrokeThickness = 3,
+            Enabled = true,
+            Draggable = true,
+            OnlyMobile = false,
+            Scale = 1,
+            Color = ColorSequence.new(curColor),
+        })
+    end
+end)
+Window:Tag({
+    Title = "游戏专区",
+    Radius = 5,
+    Color = Color3.new(1,1,1), 
+    TextColor = Color3.new(0,0,0) 
+})
+
+local timeTag = Window:Tag({
+    Title = "LU_HUB完美版",
+    Icon = "crown", 
+    Radius = 5,
+    Color = Color3.new(1,1,1), 
+    TextColor = Color3.new(0,0,0) 
+})
+
+task.spawn(function()
+    task.wait(0.05)
+    for _,v in timeTag:GetDescendants() do
+        if v:IsA("TextLabel") then
+            v.TextColor3 = Color3.new(0,0,0)
+        end
+    end
+end)
+
+task.spawn(function()
+    local hue = 0
+    while task.wait(0.1) do
+        timeTag:Set("Title", os.date("%Y-%m-%d %H:%M:%S"))
+        hue = hue + 0.02
+        if hue > 1 then
+            hue = 0
+        end
+        timeTag:Set("Color", Color3.fromHSV(hue, 1, 1))
+    end
+end)
+
+Window:SetToggleKey(Enum.KeyCode.F, true)
+
+if not borderInitialized then
+    task.spawn(function()
+        task.wait(0.5) 
+        local stroke = createBorder(Window)
+        if stroke then
+            startBorderAnimation(Window)
+            borderInitialized = true
+        end
+        
+        StartFontEnforcer()
+    end)
+end
+
+local originalOpenFunction = Window.Open
+Window.Open = function(...)
+    local result = originalOpenFunction(...)
+    if borderInitialized and not borderAnimation then
+        task.wait(0.1)
+        startBorderAnimation(Window)
+    end
+    return result
+end
+
+Window:OnClose(function()
+    if borderAnimation then
+        borderAnimation:Disconnect()
+        borderAnimation = nil
+    end
+end)
+
+local Tabs = {
+    Info = Window:Tab({ Title = gradient("Info", Color3.fromHex("#FFFFFF"), Color3.fromHex("#FF9900")), Icon = "rbxassetid://135461405245048"}),    
+    DoomBrickTab = Window:Tab({ Title = "末日砖块无冷却", Icon = "rbxassetid://135461405245048" }),    
+}
+
+WindUI:Notify({
+    Title = "鹿脚本",
+    Content = "鹿脚本加载成功 作者 LY Team 当前时间：" .. os.date("%H:%M:%S"),
+    Icon = "rbxassetid://135461405245048",  
+    Duration = 4
+})
+
+Tabs.Info:Section({Title = "脚本信息"})
+Tabs.Info:Paragraph({
+    Title = "公告:",
+    Desc = "该脚本由LY Team制作，目前支持21个服务器，游戏版 尊敬的用户欢迎使用鹿脚本脚本在持续更新加入qq群1032019653",
+    Image = "https://play-lh.googleusercontent.com/7cIIPlWm4m7AGqVpEsIfyL-HW4cQla4ucXnfalMft1TMIYQIlf2vqgmthlZgbNAQoaQ",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Section({Title = "脚本信息"})
+Tabs.Info:Paragraph({
+    Title = "公告:",
+    Desc = "该脚由LY Team制作，目前版本v1，游戏版 尊敬的用户欢迎使用鹿脚本脚本在持续更新加入qq群1032019653",
+    Image = "https://play-lh.googleusercontent.com/7cIIPlWm4m7AGqVpEsIfyL-HW4cQla4ucXnfalMft1TMIYQIlf2vqgmthlZgbNAQoaQ",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+
+Tabs.Info:Section({Title = "脚本信息"})
+Tabs.Info:Paragraph({
+    Title = "公告:",
+    Desc = "脚本帮助者KXG。制作者鹿言。qq群972232322。吉祥物唐人。神秘人 喵哉",
+    Image = "https://play-lh.googleusercontent.com/7cIIPlWm4m7AGqVpEsIfyL-HW4cQla4ucXnfalMft1TMIYQIlf2vqgmthlZgbNAQoaQ",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ClientId = game:GetService("HttpService"):GenerateGUID(false)
+local ServerId = game.JobId
+local AccountDays = math.floor(LocalPlayer.AccountAge)
+local AccountYear = tonumber(string.format("%.2f", AccountDays/365))
+
+Tabs.Info:Paragraph({
+    Title = "用户名:",
+    Desc = LocalPlayer.Name,
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "用户ID:",
+    Desc = tostring(LocalPlayer.UserId),
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "客户端ID:",
+    Desc = ClientId,
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "地区:",
+    Desc = "TW",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "语言:",
+    Desc = "zh-cn",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "账户年龄(天):",
+    Desc = tostring(AccountDays),
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "账户年龄(年):",
+    Desc = tostring(AccountYear),
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "注入器:",
+    Desc = "Delta",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "服务器ID:",
+    Desc = ServerId,
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "服务器位置ID:",
+    Desc = "97152974415088",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "服务器在线人数:",
+    Desc = tostring(#Players:GetPlayers()),
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+
+Tabs.DoomBrickTab:Toggle({
+    Title = "火箭发射器持续发射",
+    Icon = "check",
+    Default = false,
+    Callback = function(enabled)
+        local conn
+        local localPlr = game:GetService("Players").LocalPlayer
+        if enabled then
+            conn = task.spawn(function()
+                while task.wait() do
+                    local char = localPlr.Character or localPlr.CharacterAdded:Wait()
+                    local root = char:WaitForChild("HumanoidRootPart")
+                    local rocket = char:WaitForChild("RocketLauncher"):WaitForChild("Fire")
+                    local args = {
+                        vector.create(root.Position.X, root.Position.Y, root.Position.Z)
+                    }
+                    rocket:FireServer(unpack(args))
+                end
+            end)
+        else
+            task.cancel(conn)
+        end
+    end,
+})
+
+Tabs.DoomBrickTab:Toggle({
+    Title = "超级球持续发射",
+    Icon = "check",
+    Default = false,
+    Callback = function(enabled)
+        local conn
+        local localPlr = game:GetService("Players").LocalPlayer
+        if enabled then
+            conn = task.spawn(function()
+                while task.wait() do
+                    local char = localPlr.Character or localPlr.CharacterAdded:Wait()
+                    local root = char:WaitForChild("HumanoidRootPart")
+                    local fireEvent = char:WaitForChild("Superball"):WaitForChild("Fire")
+                    local args = {
+                        vector.create(root.Position.X, root.Position.Y, root.Position.Z)
+                    }
+                    fireEvent:FireServer(unpack(args))
+                end
+            end)
+        else
+            task.cancel(conn)
+        end
+    end,
+})
+
+Tabs.DoomBrickTab:Toggle({
+    Title = "定时炸弹持续引爆",
+    Icon = "check",
+    Default = false,
+    Callback = function(enabled)
+        local conn
+        local localPlr = game:GetService("Players").LocalPlayer
+        if enabled then
+            conn = task.spawn(function()
+                while task.wait() do
+                    local char = localPlr.Character or localPlr.CharacterAdded:Wait()
+                    local root = char:WaitForChild("HumanoidRootPart")
+                    local fireEvent = char:WaitForChild("Timebomb"):WaitForChild("Fire")
+                    local args = {
+                        root.CFrame
+                    }
+                    fireEvent:FireServer(unpack(args))
+                end
+            end)
+        else
+            task.cancel(conn)
+        end
+    end,
+})
