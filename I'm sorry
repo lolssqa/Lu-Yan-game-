@@ -211,22 +211,8 @@ Window:OnClose(function()
 end)
 
 local Tabs = {
-    Info = Window:Tab({ Title = gradient("Info", Color3.fromHex("#FFFFFF"), Color3.fromHex("#FF9900")), Icon = "rbxassetid://135461405245048"}),        
-    BrainRotWingTab = Window:Tab({ Title = "+1翅膀（给脑腐者）", Icon = "rbxassetid://135461405245048" }),    
-    NinjaTab = Window:Tab({ Title = "排干河水", Icon = "rbxassetid://135461405245048" }),
-    NinjaLegendTab = Window:Tab({ Title = "忍者传奇", Icon = "rbxassetid://135461405245048" }),
-    EdwardTrainTab = Window:Tab({ Title = "爱德华食人列车", Icon = "rbxassetid://135461405245048" }),
-    KoreanSchool = Window:Tab({ Title = "韩国学校区", Icon = "school" }),
-    LuckyBlockTab = Window:Tab({ Title = "幸运方块战场", Icon = "rbxassetid://135461405245048" }),
-    HitTab = Window:Tab({ Title = "堡垒", Icon = "rbxassetid://135461405245048" }),
-    SpeedClickerTab = Window:Tab({ Title = "每次点击加1速度", Icon = "rbxassetid://135461405245048" }),
-    CandyKeyboardTab = Window:Tab({ Title = "糖果键盘跑酷", Icon = "rbxassetid://135461405245048" }),
-    KeyPressTab = Window:Tab({ Title = "按下一个键帽", Icon = "rbxassetid://135461405245048" }),
-    StrengthLegendsTab = Window:Tab({ Title = "力量传奇", Icon = "rbxassetid://135461405245048" }),
-    KickLuckyBlockTab = Window:Tab({ Title = "踢幸运方块", Icon = "rbxassetid://135461405245048" }),
-    PrisonLifeTab = Window:Tab({ Title = "监狱人生", Icon = "rbxassetid://135461405245048" }),
-    FractureSimTab = Window:Tab({ Title = "骨折模拟器", Icon = "rbxassetid://135461405245048" }),
-    XueZhaiTab = Window:Tab({ Title = gradient("血债", Color3.fromHex("#ff2222"), Color3.fromHex("#ff8800")), Icon = "rbxassetid://135461405245048" }),
+    Info = Window:Tab({ Title = gradient("Info", Color3.fromHex("#FFFFFF"), Color3.fromHex("#FF9900")), Icon = "rbxassetid://135461405245048"}),          
+    NinjaTab = Window:Tab({ Title = "排干河水", Icon = "rbxassetid://135461405245048" }),    
 }
 
 WindUI:Notify({
