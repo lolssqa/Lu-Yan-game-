@@ -48,7 +48,7 @@ task.spawn(function()
 
             task.wait(1.4)
             pcall(function()
-                loadstring(game:HttpGet("https://github.com/lolssqa/Lu-Yan-game-/blob/main/god"))()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/god"))()
             end)
             NotifyLabel.Text = "脚本已尝试加载"
 
