@@ -211,8 +211,7 @@ Window:OnClose(function()
 end)
 
 local Tabs = {
-    Info = Window:Tab({ Title = gradient("Info", Color3.fromHex("#FFFFFF"), Color3.fromHex("#FF9900")), Icon = "rbxassetid://135461405245048"}),                         
-    KeyPressTab = Window:Tab({ Title = "按下一个键帽", Icon = "rbxassetid://135461405245048" }),                
+    Info = Window:Tab({ Title = gradient("Info", Color3.fromHex("#FFFFFF"), Color3.fromHex("#FF9900")), Icon = "rbxassetid://135461405245048"}),                                         
     XueZhaiTab = Window:Tab({ Title = gradient("血债", Color3.fromHex("#ff2222"), Color3.fromHex("#ff8800")), Icon = "rbxassetid://135461405245048" }),
 }
 
