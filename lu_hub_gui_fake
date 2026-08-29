@@ -1,0 +1,2 @@
+loadstring(game:HttpGet("https://github.com/lolssqa/obfuscation/releases/download/fake/fake.gui"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/LY_HUB"))()
