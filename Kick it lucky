@@ -323,34 +323,6 @@ Tabs.Info:Paragraph({
     ThumbnailSize = 120
 })
 
-local teleportLoop
-Tabs.CandyKeyboardTab:Toggle({
-    Title = "+1win",
-    Icon = "check",
-    Default = false,
-    Callback = function(enabled)
-        local lp = game:GetService("Players").LocalPlayer
-        if enabled then
-            teleportLoop = task.spawn(function()
-                while task.wait() do
-                    pcall(function()
-                        local char = lp.Character
-                        if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-                        char.HumanoidRootPart.CFrame = CFrame.new (4.456, 8.857, 271.253)
-                        task.wait(0.6)
-                        char.HumanoidRootPart.CFrame = CFrame.new(-12.428, 8.857, 281.710)
-                    end)
-                end
-            end)
-        else
-            if teleportLoop then
-                task.cancel(teleportLoop)
-                teleportLoop = nil
-            end
-        end
-    end
-})
-
 local speedUpgradeLoop
 Tabs.KickLuckyBlockTab:Toggle({
     Title = "自动速度升级",
