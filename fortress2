@@ -1,0 +1,63 @@
+task.spawn(function()
+    local triggered = false
+    local TweenService = game:GetService("TweenService")
+    local RunService = game:GetService("RunService")
+    local targetPlaceId = 14313259147
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "ServerDetectNotify"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    local NotifyLabel = Instance.new("TextLabel")
+    NotifyLabel.Size = UDim2.new(0, 340, 0, 48)
+    NotifyLabel.Position = UDim2.new(1, -350, 1, 20)
+    NotifyLabel.BackgroundColor3 = Color3.new(0.08,0.08,0.08)
+    NotifyLabel.BackgroundTransparency = 0.15
+    NotifyLabel.Font = Enum.Font.GothamSemibold
+    NotifyLabel.TextSize = 17
+    NotifyLabel.Text = ""
+    NotifyLabel.Visible = true
+    NotifyLabel.BorderSizePixel = 0
+    NotifyLabel.Parent = ScreenGui
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0,10)
+    UICorner.Parent = NotifyLabel
+
+    local tweenInInfo = TweenInfo.new(0.35,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+    local tweenOutInfo = TweenInfo.new(0.3,Enum.EasingStyle.Quad,Enum.EasingDirection.In)
+
+    local hue = 0
+    local rainbowConn
+    rainbowConn = RunService.RenderStepped:Connect(function()
+        hue += 0.015
+        if hue > 1 then hue = 0 end
+        NotifyLabel.TextColor3 = Color3.fromHSV(hue,1,1)
+    end)
+
+    while task.wait(0.4) do
+        if triggered then break end
+        if game.PlaceId == targetPlaceId then
+            triggered = true
+            NotifyLabel.Text = "检测到指定服务器，即将加载脚本"
+            local tweenIn = TweenService:Create(NotifyLabel,tweenInInfo,{Position = UDim2.new(1, -350, 1, -80)})
+            tweenIn:Play()
+            tweenIn.Completed:Wait()
+
+            task.wait(1.4)
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/fortress"))()
+            end)
+            NotifyLabel.Text = "脚本已尝试加载"
+
+            task.wait(2.2)
+            local tweenOut = TweenService:Create(NotifyLabel,tweenOutInfo,{Position = UDim2.new(1, -350, 1, 20)})
+            tweenOut:Play()
+            tweenOut.Completed:Wait()
+            NotifyLabel.Visible = false
+            rainbowConn:Disconnect()
+        end
+    end
+end)
