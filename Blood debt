@@ -1,0 +1,1068 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/lolssqa/rspy-but-back/releases/download/now/main.2.lua"))()
+local FLOW_SPEED = 5.5
+local BORDER_THICKNESS = 1.7
+local FIXED_FONT = Enum.Font.SourceSansBold
+local RainbowTheme = ColorSequence.new({
+	ColorSequenceKeypoint.new(0.00, Color3.fromHex("FF0000")),
+	ColorSequenceKeypoint.new(0.17, Color3.fromHex("FF9900")),
+	ColorSequenceKeypoint.new(0.33, Color3.fromHex("FFFF00")),
+	ColorSequenceKeypoint.new(0.50, Color3.fromHex("00FF00")),
+	ColorSequenceKeypoint.new(0.67, Color3.fromHex("00CCFF")),
+	ColorSequenceKeypoint.new(0.83, Color3.fromHex("6600FF")),
+	ColorSequenceKeypoint.new(1.00, Color3.fromHex("FF0099")),
+})
+local borderAnimation
+local borderInitialized = false
+
+function gradient(text, startColor, endColor)
+    local result = ""
+    local chars = {}
+    for uchar in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+        table.insert(chars, uchar)
+    end
+    local length = #chars
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+        local r = startColor.R + (endColor.R - startColor.R) * t
+        local g = startColor.G + (endColor.G - startColor.G) * t
+        local b = startColor.B + (endColor.B - startColor.B) * t
+        result = result .. string.format('<font color="rgb(%d,%d,%d)">%s</font>', 
+            math.floor(r * 255), math.floor(g * 255), math.floor(b * 255), chars[i])
+    end
+    return result
+end
+
+local function StartFontEnforcer()
+    if not Window or not Window.UIElements then 
+        task.wait(1)
+        if not Window or not Window.UIElements then return end
+    end  
+    local MainFrame = Window.UIElements.Main
+    local function setFont(instance)
+        if instance:IsA("TextLabel") or instance:IsA("TextButton") or instance:IsA("TextBox") then
+            pcall(function() 
+                instance.Font = FIXED_FONT 
+                instance.RichText = true
+            end)
+        end
+    end
+    for _, child in ipairs(MainFrame:GetDescendants()) do
+        setFont(child)
+    end
+    MainFrame.DescendantAdded:Connect(function(child)
+        setFont(child)
+    end)
+end
+local function createBorder(window)
+    if not window or not window.UIElements then
+        task.wait(1)
+        if not window or not window.UIElements then return nil end
+    end
+    local mainFrame = window.UIElements.Main
+    if not mainFrame then return nil end    
+    if mainFrame:FindFirstChild("FlowBorder") then return mainFrame.FlowBorder end    
+    if not mainFrame:FindFirstChildOfClass("UICorner") then
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 16)
+        corner.Parent = mainFrame
+    end    
+    local stroke = Instance.new("UIStroke")
+    stroke.Name = "FlowBorder"
+    stroke.Thickness = BORDER_THICKNESS
+    stroke.Color = Color3.new(1, 1, 1)
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.LineJoinMode = Enum.LineJoinMode.Round
+    stroke.Enabled = true
+    stroke.Parent = mainFrame    
+    local gradient = Instance.new("UIGradient")
+    gradient.Name = "StreamEffect"
+    gradient.Color = RainbowTheme
+    gradient.Rotation = 0
+    gradient.Parent = stroke    
+    return stroke
+end
+local function startBorderAnimation(window)
+    if not window or not window.UIElements then return nil end
+    local mainFrame = window.UIElements.Main
+    if not mainFrame then return nil end    
+    local stroke = mainFrame:FindFirstChild("FlowBorder")
+    if not stroke then return nil end    
+    local gradient = stroke:FindFirstChild("StreamEffect")
+    if not gradient then return nil end    
+    if borderAnimation then borderAnimation:Disconnect() borderAnimation = nil end    
+    local animation
+    animation = game:GetService("RunService").Heartbeat:Connect(function()
+        if not stroke or stroke.Parent == nil then
+            animation:Disconnect()
+            return
+        end
+        gradient.Rotation = (tick() * FLOW_SPEED * 20) % 360
+    end)
+    borderAnimation = animation
+    return animation
+end
+
+Window = WindUI:CreateWindow({
+    Title = gradient("鹿脚本｜游戏区", Color3.fromHex("#FF0000"), Color3.fromHex("#0099FF")),
+Author = gradient("作者:LY Team", Color3.fromHex("#9900FF"), Color3.fromHex("#FF0099")),
+    IconThemed = true,
+    Folder = "Atomic",
+   Transparent = true,
+    Theme = "Rainbow",
+    SideBarWidth = 120,
+    HideSearchBar = false,
+    ScrollBarEnabled = true,
+    Background = "rbxassetid://104488234583316",
+    BackgroundImageTransparency = 0.2,
+--    Background = "video:https://raw.githack.com/Potato5466794/LUAUmisc/refs/heads/main/Video_1770894406219_889.mp4",
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Callback = function()
+        end
+    },
+})
+
+task.spawn(function()
+    local toggle = false
+    while task.wait(0.12) do
+        toggle = not toggle
+        local curColor = toggle and Color3.new(1,0,0) or Color3.new(1,1,1)
+
+        Window:EditOpenButton({
+            Title = "67 鹿脚本 67",
+            Icon = "rbxassetid://135461405245048",
+            CornerRadius = UDim.new(1, 0),
+            StrokeThickness = 3,
+            Enabled = true,
+            Draggable = true,
+            OnlyMobile = false,
+            Scale = 1,
+            Color = ColorSequence.new(curColor),
+        })
+    end
+end)
+Window:Tag({
+    Title = "游戏专区",
+    Radius = 5,
+    Color = Color3.new(1,1,1), 
+    TextColor = Color3.new(0,0,0) 
+})
+
+local timeTag = Window:Tag({
+    Title = "LU_HUB完美版",
+    Icon = "crown", 
+    Radius = 5,
+    Color = Color3.new(1,1,1), 
+    TextColor = Color3.new(0,0,0) 
+})
+
+task.spawn(function()
+    task.wait(0.05)
+    for _,v in timeTag:GetDescendants() do
+        if v:IsA("TextLabel") then
+            v.TextColor3 = Color3.new(0,0,0)
+        end
+    end
+end)
+
+task.spawn(function()
+    local hue = 0
+    while task.wait(0.1) do
+        timeTag:Set("Title", os.date("%Y-%m-%d %H:%M:%S"))
+        hue = hue + 0.02
+        if hue > 1 then
+            hue = 0
+        end
+        timeTag:Set("Color", Color3.fromHSV(hue, 1, 1))
+    end
+end)
+
+Window:SetToggleKey(Enum.KeyCode.F, true)
+
+if not borderInitialized then
+    task.spawn(function()
+        task.wait(0.5) 
+        local stroke = createBorder(Window)
+        if stroke then
+            startBorderAnimation(Window)
+            borderInitialized = true
+        end
+        
+        StartFontEnforcer()
+    end)
+end
+
+local originalOpenFunction = Window.Open
+Window.Open = function(...)
+    local result = originalOpenFunction(...)
+    if borderInitialized and not borderAnimation then
+        task.wait(0.1)
+        startBorderAnimation(Window)
+    end
+    return result
+end
+
+Window:OnClose(function()
+    if borderAnimation then
+        borderAnimation:Disconnect()
+        borderAnimation = nil
+    end
+end)
+
+local Tabs = {
+    Info = Window:Tab({ Title = gradient("Info", Color3.fromHex("#FFFFFF"), Color3.fromHex("#FF9900")), Icon = "rbxassetid://135461405245048"}),                         
+    KeyPressTab = Window:Tab({ Title = "按下一个键帽", Icon = "rbxassetid://135461405245048" }),                
+    XueZhaiTab = Window:Tab({ Title = gradient("血债", Color3.fromHex("#ff2222"), Color3.fromHex("#ff8800")), Icon = "rbxassetid://135461405245048" }),
+}
+
+WindUI:Notify({
+    Title = "鹿脚本",
+    Content = "鹿脚本加载成功 作者 LY Team 当前时间：" .. os.date("%H:%M:%S"),
+    Icon = "rbxassetid://135461405245048",  
+    Duration = 4
+})
+
+Tabs.Info:Section({Title = "脚本信息"})
+Tabs.Info:Paragraph({
+    Title = "公告:",
+    Desc = "该脚本由LY Team制作，目前支持21个服务器，游戏版 尊敬的用户欢迎使用鹿脚本脚本在持续更新加入qq群1032019653",
+    Image = "https://play-lh.googleusercontent.com/7cIIPlWm4m7AGqVpEsIfyL-HW4cQla4ucXnfalMft1TMIYQIlf2vqgmthlZgbNAQoaQ",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Section({Title = "脚本信息"})
+Tabs.Info:Paragraph({
+    Title = "公告:",
+    Desc = "该脚由LY Team制作，目前版本v1，游戏版 尊敬的用户欢迎使用鹿脚本脚本在持续更新加入qq群1032019653",
+    Image = "https://play-lh.googleusercontent.com/7cIIPlWm4m7AGqVpEsIfyL-HW4cQla4ucXnfalMft1TMIYQIlf2vqgmthlZgbNAQoaQ",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+
+Tabs.Info:Section({Title = "脚本信息"})
+Tabs.Info:Paragraph({
+    Title = "公告:",
+    Desc = "脚本帮助者KXG。制作者鹿言。qq群972232322。吉祥物唐人。神秘人 喵哉",
+    Image = "https://play-lh.googleusercontent.com/7cIIPlWm4m7AGqVpEsIfyL-HW4cQla4ucXnfalMft1TMIYQIlf2vqgmthlZgbNAQoaQ",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ClientId = game:GetService("HttpService"):GenerateGUID(false)
+local ServerId = game.JobId
+local AccountDays = math.floor(LocalPlayer.AccountAge)
+local AccountYear = tonumber(string.format("%.2f", AccountDays/365))
+
+Tabs.Info:Paragraph({
+    Title = "用户名:",
+    Desc = LocalPlayer.Name,
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "用户ID:",
+    Desc = tostring(LocalPlayer.UserId),
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "客户端ID:",
+    Desc = ClientId,
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "地区:",
+    Desc = "TW",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "语言:",
+    Desc = "zh-cn",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "账户年龄(天):",
+    Desc = tostring(AccountDays),
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "账户年龄(年):",
+    Desc = tostring(AccountYear),
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "注入器:",
+    Desc = "Delta",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "服务器ID:",
+    Desc = ServerId,
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "服务器位置ID:",
+    Desc = "97152974415088",
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+Tabs.Info:Paragraph({
+    Title = "服务器在线人数:",
+    Desc = tostring(#Players:GetPlayers()),
+    ImageSize = 20,
+    ThumbnailSize = 120
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+local ESP_Active = false
+local ESP_Container = nil
+local ConnList = {}
+
+local RoleColorTable = {
+    Murderer = Color3.new(1, 0.15, 0.15),
+    Sheriff = Color3.new(0.1, 0.6, 1),
+    Innocent = Color3.new(0.2, 1, 0.3),
+    Unknown = Color3.new(0.7, 0.7, 0.7)
+}
+local RoleNameTable = {
+    Murderer = "杀手",
+    Sheriff = "警长",
+    Innocent = "平民",
+    Unknown = "未知身份"
+}
+
+local function GetTrueRole(targetPlayer)
+    local roleData = targetPlayer:GetAttribute("Role")
+    if roleData then
+        return roleData, false
+    end
+    local char = targetPlayer.Character
+    if not char then
+        return "Unknown", true
+    end
+    local tool = char:FindFirstChildOfClass("Tool")
+    if tool then
+        local tname = tool.Name:lower()
+        if tname:find("gun") or tname:find("枪") then
+            return "Sheriff", true
+        else
+            return "Murderer", true
+        end
+    end
+    return "Innocent", true
+end
+
+local function FullClearESP()
+    if ESP_Container then
+        pcall(function() ESP_Container:Destroy() end)
+    end
+    ESP_Container = nil
+    for _, link in ipairs(ConnList) do
+        pcall(function() link:Disconnect() end)
+    end
+    table.clear(ConnList)
+end
+
+local function MakePlayerESP(playerObj, characterModel)
+    if not ESP_Active or not ESP_Container then return end
+    local Head = characterModel:FindFirstChild("Head")
+    local Humanoid = characterModel:FindFirstChild("Humanoid")
+    if not Head or not Humanoid then return end
+
+    local Outline = Instance.new("Highlight")
+    Outline.Name = "PlayerOutline"
+    Outline.Adornee = characterModel
+    Outline.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    Outline.FillTransparency = 1
+    Outline.OutlineTransparency = 0
+    Outline.Parent = ESP_Container
+
+    local Billboard = Instance.new("BillboardGui")
+    Billboard.Adornee = Head
+    Billboard.AlwaysOnTop = true
+    Billboard.Size = UDim2.new(0, 220, 0, 80)
+    Billboard.StudsOffset = Vector3.new(0, 3.5, 0)
+    Billboard.Parent = ESP_Container
+
+    local InfoLabel = Instance.new("TextLabel")
+    InfoLabel.Size = UDim2.new(1, 0, 1, 0)
+    InfoLabel.BackgroundTransparency = 1
+    InfoLabel.Font = Enum.Font.SourceSansBold
+    InfoLabel.TextSize = 17
+    InfoLabel.Parent = Billboard
+
+    local function UpdateDisplay()
+        local role, isGuess = GetTrueRole(playerObj)
+        Outline.OutlineColor = RoleColorTable[role]
+        InfoLabel.TextColor3 = RoleColorTable[role]
+        local suffix = isGuess and " (推测)" or ""
+        InfoLabel.Text = playerObj.Name.."\n"..RoleNameTable[role]..suffix
+    end
+    UpdateDisplay()
+
+    local healthConnect
+    healthConnect = Humanoid.HealthChanged:Connect(function(hp)
+        UpdateDisplay()
+        if hp <= 0 then
+            Outline.Enabled = false
+            Billboard.Enabled = false
+        else
+            Outline.Enabled = true
+            Billboard.Enabled = true
+        end
+    end)
+    table.insert(ConnList, healthConnect)
+
+    local destroyConnect
+    destroyConnect = characterModel.Destroying:Connect(function()
+        pcall(function() Outline:Destroy() Billboard:Destroy() healthConnect:Disconnect() end)
+    end)
+    table.insert(ConnList, destroyConnect)
+end
+
+local function RefreshAllESP()
+    if not ESP_Active then return end
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr == LocalPlayer then continue end
+        local char = plr.Character
+        if char then
+            task.spawn(MakePlayerESP, plr, char)
+        end
+        local respawnCon
+        respawnCon = plr.CharacterAdded:Connect(function(newChar)
+            task.wait(0.4)
+            if ESP_Active then
+                MakePlayerESP(plr, newChar)
+            end
+        end)
+        table.insert(ConnList, respawnCon)
+    end
+end
+
+-- WindUI开关，把这条放到你对应的Tab标签下
+Tabs.XueZhaiTab:Toggle({
+	Title = "人物轮廓+头顶ESP【识别不准请见谅】",
+	Default = false,
+	Callback = function(state)
+		ESP_Active = state
+		if ESP_Active then
+			FullClearESP()
+			ESP_Container = Instance.new("Folder")
+			ESP_Container.Name = "ESP存储容器"
+			ESP_Container.Parent = CoreGui
+			RefreshAllESP()
+		else
+			FullClearESP()
+		end
+	end
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+local hudEnable = false
+local hudGui = nil
+local hudAnimating = false
+local hudVisible = false
+
+local roleColors = {
+	Murderer = Color3.new(1,0.15,0.15),
+	Sheriff = Color3.new(0.1,0.6,1),
+	Innocent = Color3.new(0.2,1,0.3),
+	Unknown = Color3.new(0.7,0.7,0.7)
+}
+local roleZhText = {
+	Murderer = "杀手",
+	Sheriff = "警长",
+	Innocent = "平民",
+	Unknown = "未知身份"
+}
+
+--混合身份读取（真实优先，读不到工具推测带标记）
+local function GetTrueRole(targetPlayer)
+	local roleData = targetPlayer:GetAttribute("Role")
+	if roleData then
+		return roleData, false
+	end
+	local char = targetPlayer.Character
+	if not char then
+		return "Unknown", true
+	end
+	local tool = char:FindFirstChildOfClass("Tool")
+	if tool then
+		local tname = tool.Name:lower()
+		if tname:find("gun") or tname:find("枪") then
+			return "Sheriff", true
+		else
+			return "Murderer", true
+		end
+	end
+	return "Innocent", true
+end
+
+local function BuildHUD()
+	if hudGui then return end
+	local ScreenGui = Instance.new("ScreenGui")
+	ScreenGui.Name = "SideHUD_XueZhai"
+	ScreenGui.ResetOnSpawn = false
+	ScreenGui.Parent = CoreGui
+	hudGui = ScreenGui
+
+	local mainFrame = Instance.new("Frame")
+	mainFrame.AnchorPoint = Vector2.new(1, 0)
+	mainFrame.Position = UDim2.new(1, 20, 0.35, 0)
+	mainFrame.Size = UDim2.new(0, 360, 0, 135)
+	mainFrame.BackgroundColor3 = Color3.new(0.08, 0.08, 0.08)
+	mainFrame.BackgroundTransparency = 0.25
+	mainFrame.ClipsDescendants = true
+	mainFrame.Visible = false
+	mainFrame.Parent = ScreenGui
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 18)
+	corner.Parent = mainFrame
+
+	local avatarImg = Instance.new("ImageLabel")
+	avatarImg.Size = UDim2.new(0, 84, 0, 84)
+	avatarImg.Position = UDim2.new(0, 12, 0, 13)
+	avatarImg.BackgroundTransparency = 1
+	avatarImg.ClipsDescendants = true
+	avatarImg.Parent = mainFrame
+
+	local avatarCorner = Instance.new("UICorner")
+	avatarCorner.CornerRadius = UDim.new(0, 16)
+	avatarCorner.Parent = avatarImg
+
+	local nameText = Instance.new("TextLabel")
+	nameText.Size = UDim2.new(0, 240, 0, 32)
+	nameText.Position = UDim2.new(0, 108, 0, 2)
+	nameText.BackgroundTransparency = 1
+	nameText.TextColor3 = Color3.new(1, 1, 1)
+	nameText.Font = Enum.Font.GothamBold
+	nameText.TextSize = 24
+	nameText.Text = ""
+	nameText.TextXAlignment = Enum.TextXAlignment.Left
+	nameText.Parent = mainFrame
+
+	local roleText = Instance.new("TextLabel")
+	roleText.Size = UDim2.new(0, 240, 0, 24)
+	roleText.Position = UDim2.new(0, 108, 0, 26)
+	roleText.BackgroundTransparency = 1
+	roleText.Font = Enum.Font.GothamBold
+	roleText.TextSize = 18
+	roleText.TextXAlignment = Enum.TextXAlignment.Left
+	roleText.Text = ""
+	roleText.Parent = mainFrame
+
+	local hpBg = Instance.new("Frame")
+	hpBg.Size = UDim2.new(0, 220, 0, 24)
+	hpBg.Position = UDim2.new(0, 108, 0, 52)
+	hpBg.BackgroundColor3 = Color3.new(0.22, 0.22, 0.22)
+	hpBg.ClipsDescendants = true
+	hpBg.Parent = mainFrame
+
+	local hpBgCorner = Instance.new("UICorner")
+	hpBgCorner.CornerRadius = UDim.new(0, 12)
+	hpBgCorner.Parent = hpBg
+
+	local hpFill = Instance.new("Frame")
+	hpFill.Size = UDim2.new(1, 0, 1, 0)
+	hpFill.BackgroundColor3 = Color3.new(0.15, 0.85, 0.22)
+	hpFill.ClipsDescendants = true
+	hpFill.Parent = hpBg
+
+	local hpFillCorner = Instance.new("UICorner")
+	hpFillCorner.CornerRadius = UDim.new(0, 12)
+	hpFillCorner.Parent = hpFill
+
+	local hpNumText = Instance.new("TextLabel")
+	hpNumText.Size = UDim2.new(0, 200, 0, 22)
+	hpNumText.Position = UDim2.new(0, 110, 0, 54)
+	hpNumText.BackgroundTransparency = 1
+	hpNumText.TextColor3 = Color3.new(1, 1, 1)
+	hpNumText.Font = Enum.Font.Gotham
+	hpNumText.TextSize = 17
+	hpNumText.TextXAlignment = Enum.TextXAlignment.Left
+	hpNumText.Text = "100 / 100"
+	hpNumText.Parent = mainFrame
+
+	local distText = Instance.new("TextLabel")
+	distText.Size = UDim2.new(0, 120, 0, 26)
+	distText.Position = UDim2.new(0, 225, 0, 82)
+	distText.BackgroundTransparency = 1
+	distText.TextColor3 = Color3.new(1, 1, 0.55)
+	distText.Font = Enum.Font.Gotham
+	distText.TextSize = 19
+	distText.TextXAlignment = Enum.TextXAlignment.Right
+	distText.Text = "00.0 m"
+	distText.Parent = mainFrame
+
+	local lastUserId = nil
+
+	local function showHUD()
+		if hudAnimating or hudVisible then return end
+		hudVisible = true
+		hudAnimating = true
+		mainFrame.Visible = true
+		mainFrame.Position = UDim2.new(1, 20, 0.35, 0)
+		local tween = TweenService:Create(mainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Position = UDim2.new(1, -20, 0.35, 0)})
+		tween:Play()
+		tween.Completed:Connect(function() hudAnimating = false end)
+	end
+
+	local function hideHUD()
+		if hudAnimating or not hudVisible then return end
+		hudVisible = false
+		hudAnimating = true
+		local tween = TweenService:Create(mainFrame, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {Position = UDim2.new(1, 20, 0.35, 0)})
+		tween:Play()
+		tween.Completed:Connect(function()
+			if mainFrame and mainFrame.Parent then mainFrame.Visible = false end
+			hudAnimating = false
+		end)
+	end
+
+	RunService:BindToRenderStep("HUD_Update_XueZhai", Enum.RenderPriority.Camera.Value + 1, function()
+		if not hudEnable or not hudGui then return end
+		local closestEnemy = nil
+		local minDist = math.huge
+
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr == LocalPlayer then continue end
+			local char = plr.Character
+			if not char then continue end
+			local hrp = char:FindFirstChild("HumanoidRootPart")
+			local hum = char:FindFirstChild("Humanoid")
+			if not hrp or not hum or hum.Health <= 0 then continue end
+
+			local _, onScreen = workspace.CurrentCamera:WorldToViewportPoint(hrp.Position)
+			if not onScreen then continue end
+
+			local dist = (workspace.CurrentCamera.CFrame.Position - hrp.Position).Magnitude
+			if dist < minDist then
+				minDist = dist
+				closestEnemy = {player = plr, hum = hum, distance = dist}
+			end
+		end
+
+		if closestEnemy then
+			local data = closestEnemy
+			nameText.Text = data.player.Name
+			local roleKey, isGuess = GetTrueRole(data.player)
+			local suffix = isGuess and " (推测)" or ""
+			roleText.Text = "身份："..roleZhText[roleKey]..suffix
+			roleText.TextColor3 = roleColors[roleKey]
+
+			local hpRatio = math.clamp(data.hum.Health / data.hum.MaxHealth, 0, 1)
+			hpFill.Size = UDim2.new(hpRatio, 0, 1, 0)
+			hpNumText.Text = math.floor(data.hum.Health) .. " / " .. data.hum.MaxHealth
+			distText.Text = string.format("%.1f m", data.distance)
+
+			if lastUserId ~= data.player.UserId then
+				lastUserId = data.player.UserId
+				pcall(function()
+					avatarImg.Image = Players:GetUserThumbnailAsync(data.player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+				end)
+			end
+			showHUD()
+		else
+			hideHUD()
+			lastUserId = nil
+		end
+	end)
+end
+
+Tabs.XueZhaiTab:Toggle({
+	Title = "右侧玩家HUD面板【混合识别】",
+	Default = false,
+	Callback = function(state)
+		hudEnable = state
+		if hudEnable then
+			BuildHUD()
+		else
+			if hudGui then
+				pcall(function() hudGui:Destroy() end)
+				hudGui = nil
+			end
+			RunService:UnbindFromRenderStep("HUD_Update_XueZhai")
+		end
+	end
+})
+
+Tabs.XueZhaiTab:Section({Title = "自定义自瞄"})
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+local Aimbot = {
+    Enabled = false,            -- 总开关：默认关闭！
+    HoldMode = false,           -- 按住模式
+    TriggerMode = "鼠标右键",    -- 触发键类型
+    CustomKey = "Q",            -- 键盘触发键
+    ToggleKey = "P",            -- 总开关热键
+    FOV = 150,                  -- 圆圈大小
+    ShowCircle = false,         -- 圆圈显示：默认关闭！！
+    RainbowCircle = false,
+    CircleColor = Color3.fromRGB(255, 255, 255),
+    WallCheck = true,
+    DeadCheck = true,
+    TeamCheck = true,
+    IsHolding = false,
+    IsMobile = false,
+}
+
+-- 检测移动端
+Aimbot.IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+
+-- ========== 清理旧圆圈（防止重复加载残留） ==========
+for _, obj in ipairs(Drawing.get and Drawing.get() or {}) do
+    if obj and obj.Type == "Circle" and obj.Text == "LuAimFOV" then
+        obj:Remove()
+    end
+end
+
+-- ========== FOV 圆圈 ==========
+local fovCircle = nil
+local hasDrawing = pcall(function()
+    fovCircle = Drawing.new("Circle")
+    fovCircle.Text = "LuAimFOV"  -- 标记，方便清理
+    fovCircle.Thickness = 1.5
+    fovCircle.NumSides = 80
+    fovCircle.Filled = false
+    fovCircle.Visible = false
+    fovCircle.Color = Aimbot.CircleColor
+end)
+
+local circleGui, circleFrame, circleStroke = nil, nil, nil
+if not hasDrawing then
+    circleGui = Instance.new("ScreenGui")
+    circleGui.Name = "LuAimCircle"
+    circleGui.ResetOnSpawn = false
+    circleGui.Parent = WindUI.ScreenGui
+
+    circleFrame = Instance.new("Frame")
+    circleFrame.BackgroundTransparency = 1
+    circleFrame.BorderSizePixel = 0
+    circleFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    circleFrame.Visible = false
+    circleFrame.Parent = circleGui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = circleFrame
+
+    circleStroke = Instance.new("UIStroke")
+    circleStroke.Thickness = 2
+    circleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    circleStroke.Parent = circleFrame
+end
+
+-- ========== 彩虹动画 ==========
+local rainbowConn = RunService.RenderStepped:Connect(function()
+    if not Aimbot.RainbowCircle or not Aimbot.ShowCircle or not Aimbot.Enabled then return end
+    local hue = (tick() % 3) / 3
+    local color = Color3.fromHSV(hue, 1, 1)
+    if fovCircle then fovCircle.Color = color end
+    if circleStroke then circleStroke.Color = color end
+end)
+
+-- ========== 核心：找最近目标 ==========
+local function getClosestTarget()
+    local cam = Workspace.CurrentCamera
+    if not cam then return nil end
+    if not LocalPlayer then return nil end
+    local char = LocalPlayer.Character
+    if not char then return nil end
+    local myRoot = char:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return nil end
+
+    local center = cam.ViewportSize / 2
+    local closest = nil
+    local minDist = Aimbot.FOV
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr == LocalPlayer then continue end
+        local tChar = plr.Character
+        if not tChar then continue end
+        local head = tChar:FindFirstChild("Head")
+        local hum = tChar:FindFirstChildOfClass("Humanoid")
+        if not head or not hum then continue end
+
+        if Aimbot.DeadCheck and hum.Health <= 0 then continue end
+        if Aimbot.TeamCheck and plr.Team and LocalPlayer.Team and plr.Team == LocalPlayer.Team then continue end
+
+        if Aimbot.WallCheck then
+            local rayParams = RaycastParams.new()
+            rayParams.FilterDescendantsInstances = {char}
+            rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+            local dir = head.Position - cam.CFrame.Position
+            local result = Workspace:Raycast(cam.CFrame.Position, dir.Unit * 2000, rayParams)
+            if result then
+                local hitModel = result.Instance:FindFirstAncestorWhichIsA("Model")
+                if hitModel ~= tChar then continue end
+            end
+        end
+
+        local pos, onScreen = cam:WorldToViewportPoint(head.Position)
+        if not onScreen then continue end
+        local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
+        if dist < minDist then
+            minDist = dist
+            closest = head
+        end
+    end
+    return closest
+end
+
+-- ========== 主循环（核心修复在这里） ==========
+local aimbotConn = RunService.RenderStepped:Connect(function()
+    local cam = Workspace.CurrentCamera
+    if not cam then return end
+    local center = cam.ViewportSize / 2
+
+    -- 【核心修复】总开关关闭时：强制隐藏圆圈，直接返回，绝不执行后续逻辑
+    if not Aimbot.Enabled then
+        if fovCircle then fovCircle.Visible = false end
+        if circleFrame then circleFrame.Visible = false end
+        return
+    end
+
+    -- 更新圆圈（只有总开关打开时才会执行到这里）
+    if Aimbot.ShowCircle then
+        if fovCircle then
+            fovCircle.Visible = true
+            fovCircle.Position = center
+            fovCircle.Radius = Aimbot.FOV
+            if not Aimbot.RainbowCircle then fovCircle.Color = Aimbot.CircleColor end
+        elseif circleFrame then
+            circleFrame.Visible = true
+            circleFrame.Size = UDim2.new(0, Aimbot.FOV * 2, 0, Aimbot.FOV * 2)
+            circleFrame.Position = UDim2.new(0, center.X, 0, center.Y)
+            if not Aimbot.RainbowCircle then circleStroke.Color = Aimbot.CircleColor end
+        end
+    else
+        if fovCircle then fovCircle.Visible = false end
+        if circleFrame then circleFrame.Visible = false end
+    end
+
+    -- 是否执行自瞄（按住模式判断）
+    local shouldAim = true
+    if not Aimbot.IsMobile and Aimbot.HoldMode then
+        shouldAim = Aimbot.IsHolding
+    end
+
+    if shouldAim then
+        local target = getClosestTarget()
+        if target then
+            cam.CFrame = CFrame.new(cam.CFrame.Position, target.Position)
+        end
+    end
+end)
+
+-- ========== 输入监听（按住模式） ==========
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if not Aimbot.Enabled then return end
+    if not Aimbot.HoldMode or Aimbot.IsMobile then return end
+
+    if Aimbot.TriggerMode == "鼠标左键" and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        Aimbot.IsHolding = true
+    elseif Aimbot.TriggerMode == "鼠标右键" and input.UserInputType == Enum.UserInputType.MouseButton2 then
+        Aimbot.IsHolding = true
+    elseif Aimbot.TriggerMode == "键盘键" and input.KeyCode == Enum.KeyCode[Aimbot.CustomKey] then
+        Aimbot.IsHolding = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    if not Aimbot.HoldMode or Aimbot.IsMobile then return end
+
+    if Aimbot.TriggerMode == "鼠标左键" and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        Aimbot.IsHolding = false
+    elseif Aimbot.TriggerMode == "鼠标右键" and input.UserInputType == Enum.UserInputType.MouseButton2 then
+        Aimbot.IsHolding = false
+    elseif Aimbot.TriggerMode == "键盘键" and input.KeyCode == Enum.KeyCode[Aimbot.CustomKey] then
+        Aimbot.IsHolding = false
+    end
+end)
+
+-- ========== UI 控件 ==========
+
+-- 总开关（默认关闭）
+Tabs.XueZhaiTab:Toggle({
+    Title = "启用自定义自瞄",
+    Icon = "check",
+    Default = false,
+    Callback = function(v)
+        Aimbot.Enabled = v
+        if not v then
+            Aimbot.IsHolding = false
+            -- 立即隐藏
+            if fovCircle then fovCircle.Visible = false end
+            if circleFrame then circleFrame.Visible = false end
+        end
+    end
+})
+
+-- 总开关热键（默认P，点击可重选）
+Tabs.XueZhaiTab:Keybind({
+    Title = "自瞄开关热键（点击重选）",
+    Value = "P",
+    CanChange = true,
+    Callback = function(key)
+        Aimbot.ToggleKey = key
+        Aimbot.Enabled = not Aimbot.Enabled
+        if not Aimbot.Enabled then
+            Aimbot.IsHolding = false
+            if fovCircle then fovCircle.Visible = false end
+            if circleFrame then circleFrame.Visible = false end
+        end
+        WindUI:Notify({
+            Title = "自定义自瞄",
+            Content = (Aimbot.Enabled and "✅ 已开启" or "❌ 已关闭") .. " [热键: " .. key .. "]",
+            Duration = 2
+        })
+    end
+})
+
+-- 手机端提示
+if Aimbot.IsMobile then
+    Tabs.XueZhaiTab:Paragraph({
+        Title = "📱 设备检测",
+        Desc = "检测到移动端，已自动切换为「一直自瞄」模式（无需按住触发键）",
+        Image = "smartphone",
+        ImageSize = 20
+    })
+end
+
+-- 按住模式
+Tabs.XueZhaiTab:Toggle({
+    Title = "按住模式（长按触发键才自瞄）",
+    Icon = "check",
+    Default = false,
+    Callback = function(v)
+        if Aimbot.IsMobile then
+            Aimbot.HoldMode = false
+            WindUI:Notify({Title = "自瞄", Content = "移动端已强制一直自瞄", Duration = 3})
+            return
+        end
+        Aimbot.HoldMode = v
+        Aimbot.IsHolding = false
+    end
+})
+
+-- 触发键选择
+Tabs.XueZhaiTab:Dropdown({
+    Title = "按住触发键",
+    Values = {"鼠标左键", "鼠标右键", "键盘键"},
+    Value = "鼠标右键",
+    Callback = function(v)
+        Aimbot.TriggerMode = v
+        Aimbot.IsHolding = false
+    end
+})
+
+-- 自定义键盘键（默认Q，点击可重选）
+Tabs.XueZhaiTab:Keybind({
+    Title = "自定义键盘触发键（点击重选）",
+    Value = "Q",
+    CanChange = true,
+    Callback = function(key)
+        Aimbot.CustomKey = key
+        Aimbot.TriggerMode = "键盘键"
+        WindUI:Notify({Title = "自瞄", Content = "触发键已设为: " .. key, Duration = 2})
+    end
+})
+
+-- FOV 圆圈大小
+Tabs.XueZhaiTab:Slider({
+    Title = "自瞄圆圈大小 (FOV)",
+    Step = 1,
+    Value = {Min = 0, Max = 600, Default = 150},
+    Callback = function(v)
+        Aimbot.FOV = v
+    end
+})
+
+-- 显示圆圈（默认关闭！！）
+Tabs.XueZhaiTab:Toggle({
+    Title = "显示自瞄圆圈",
+    Icon = "check",
+    Default = false,  -- 默认关闭！
+    Callback = function(v)
+        Aimbot.ShowCircle = v
+        if not v then
+            if fovCircle then fovCircle.Visible = false end
+            if circleFrame then circleFrame.Visible = false end
+        end
+    end
+})
+
+-- 彩虹圆圈
+Tabs.XueZhaiTab:Toggle({
+    Title = "彩虹圆圈颜色",
+    Icon = "check",
+    Default = false,
+    Callback = function(v)
+        Aimbot.RainbowCircle = v
+    end
+})
+
+-- 圆圈自定义颜色
+Tabs.XueZhaiTab:Colorpicker({
+    Title = "圆圈颜色",
+    Default = Color3.fromRGB(255, 255, 255),
+    Callback = function(color)
+        Aimbot.CircleColor = color
+    end
+})
+
+-- 墙壁检测
+Tabs.XueZhaiTab:Toggle({
+    Title = "墙壁检测（穿墙不打）",
+    Icon = "check",
+    Default = true,
+    Callback = function(v)
+        Aimbot.WallCheck = v
+    end
+})
+
+-- 死亡检测
+Tabs.XueZhaiTab:Toggle({
+    Title = "死亡检测（跳过尸体）",
+    Icon = "check",
+    Default = true,
+    Callback = function(v)
+        Aimbot.DeadCheck = v
+    end
+})
+
+-- 队友检测
+Tabs.XueZhaiTab:Toggle({
+    Title = "队友检测（跳过队友）",
+    Icon = "check",
+    Default = true,
+    Callback = function(v)
+        Aimbot.TeamCheck = v
+    end
+})
