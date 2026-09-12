@@ -1,0 +1,246 @@
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local VirtualUser = game:GetService("VirtualUser")
+local LocalPlayer = Players.LocalPlayer
+
+local antiAfkActive = false
+local antiAfkConn
+
+WindUI:AddTheme({
+    Name = "Dark",
+    Accent = Color3.fromHex("#18181b"),
+    Background = Color3.fromHex("#101010"),
+    Outline = Color3.fromHex("#FFFFFF"),
+    Text = Color3.fromHex("#FFFFFF"),
+    Placeholder = Color3.fromHex("#7a7a7a"),
+    Button = Color3.fromHex("#52525b"),
+    Icon = Color3.fromHex("#a1a1aa"),
+})
+
+local Window = WindUI:CreateWindow({
+    Title   = "鹿脚本-国人捐赠",
+    Author  = "by LY_Team",
+    Folder  = "best",
+    Icon    = "github",
+    Theme   = "Dark",
+    Acrylic = true,
+    Transparent = true,
+    Background = "rbxassetid://84152360484913",
+    Size    = UDim2.fromOffset(680, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    ToggleKey  = Enum.KeyCode.RightShift,
+    Resizable  = true,
+    AutoScale  = true,
+    NewElements = true,
+    BackgroundImageTransparency = 0.65,
+    HideSearchBar = false,
+    ScrollBarEnabled = false,
+    SideBarWidth = 200,
+    Topbar = {
+        Height      = 60,
+        ButtonsType = "Default",
+    },
+    OpenButton = {
+        Title = "鹿脚本-国人捐赠",
+        Icon = "zap",
+        CornerRadius = UDim.new(1, 0),
+        StrokeThickness = 3,
+        Enabled = true,
+        Draggable = true,
+        OnlyMobile = false,
+        Scale = 1,
+        Color = ColorSequence.new(Color3.fromHex("#000000"),Color3.fromHex("#000000")),
+    },
+    User = {
+        Enabled  = true,
+        Anonymous = false,
+        Callback = function() end,
+    },
+})
+
+local BetaTag = Window:Tag({
+	Title = "Beta",
+	Icon = "",
+	Color = Color3.fromHex("#222222"),
+	Border = true,
+})
+task.spawn(function()
+    local tagFrame = BetaTag.Frame:Wait()
+    local grad = Instance.new("UIGradient")
+    grad.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
+        ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255,255,0)),
+        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(0,255,0)),
+        ColorSequenceKeypoint.new(0.6, Color3.fromRGB(0,180,255)),
+        ColorSequenceKeypoint.new(0.8, Color3.fromRGB(120,0,255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,0)),
+    }
+    grad.Offset = Vector2.new(-1,0)
+    grad.Parent = tagFrame
+    while RunService.RenderStepped:Wait() do
+        grad.Offset += Vector2.new(0.008, 0)
+        if grad.Offset.X>1 then grad.Offset=Vector2.new(-1,0) end
+    end
+end)
+
+local function TeleportToVec(posVec)
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local root = char:WaitForChild("HumanoidRootPart")
+    root.CFrame = CFrame.new(posVec, root.Position)
+end
+
+local targetPlaceId = 132190454395474
+local bestJobId,bestPlayerCount = nil,0
+
+local MainTab = Window:Tab({Title = "Main",Icon = "house"})
+
+MainTab:Space()
+MainTab:Section({Title = "固定点位传送刷积分"})
+
+MainTab:Button({
+    Title = "点位1 ",
+    Icon = "navigation",
+    Callback = function()
+        TeleportToVec(Vector3.new(615.1,70.5,-140.6))
+        WindUI:Notify({Title="传送成功",Content="点位1",Duration=2})
+    end
+})
+MainTab:Space()
+
+MainTab:Button({
+    Title = "点位2",
+    Icon = "navigation",
+    Callback = function()
+        TeleportToVec(Vector3.new(630.3,68.4,-45.4))
+        WindUI:Notify({Title="传送成功",Content="点位2",Duration=2})
+    end
+})
+MainTab:Space()
+
+MainTab:Button({
+    Title = "点位3 ",
+    Icon = "navigation",
+    Callback = function()
+        TeleportToVec(Vector3.new(607.8,108.7,-75.7))
+        WindUI:Notify({Title="传送成功",Content="点位3",Duration=2})
+    end
+})
+MainTab:Space()
+
+MainTab:Button({
+    Title = "点位4 ",
+    Icon = "navigation",
+    Callback = function()
+        TeleportToVec(Vector3.new(1417.6,59.8,-163.8))
+        WindUI:Notify({Title="传送成功",Content="点位4",Duration=2})
+    end
+})
+MainTab:Space()
+
+MainTab:Button({
+    Title = "点位5 ",
+    Icon = "navigation",
+    Callback = function()
+        TeleportToVec(Vector3.new(511.5,69.0,-240.5))
+        WindUI:Notify({Title="传送成功",Content="点位5",Duration=2})
+    end
+})
+
+MainTab:Space()
+MainTab:Section({Title = "低人数服务器"})
+
+MainTab:Button({
+    Title = "查询最少人服务器",Icon="search",
+    Callback = function()
+        local suc,res = pcall(function()
+            local raw=game:HttpGet(string.format("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Asc&limit=100",targetPlaceId))
+            local d=HttpService:JSONDecode(raw).data
+            local minPlr,job=math.huge,nil
+            for _,s in ipairs(d) do
+                if s.playing<minPlr then minPlr=s.playing; job=s.id end
+            end
+            return {plr=minPlr,jid=job}
+        end)
+        if suc and res then
+            bestJobId=res.jid; bestPlayerCount=res.plr
+            WindUI:Notify({Title="查询完成",Content="最少人："..bestPlayerCount.."人",Duration=2})
+        else
+            WindUI:Notify({Title="错误",Content="限流/网络",Duration=3})
+        end
+    end
+})
+
+MainTab:Button({
+    Title = "跳转找到的服务器",Icon="log-in",Color=Color3.fromHex("#288bd8"),
+    Callback = function()
+        if not bestJobId then WindUI:Notify({Title="提示",Content="先查询服务器",Duration=2}) return end
+        pcall(function() TeleportService:TeleportToPlaceInstance(targetPlaceId,bestJobId,LocalPlayer) end)
+    end
+})
+
+MainTab:Space()
+MainTab:Section({Title = "防挂机"})
+local AntiAfkButton = MainTab:Toggle({
+    Title = "Anti AFK",
+    Value = false,
+    Callback = function(state)
+        antiAfkActive = state
+        if state then
+            antiAfkConn = LocalPlayer.Idled:Connect(function()
+                VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+                task.wait(1)
+                VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+            end)
+            WindUI:Notify({Title="Anti AFK",Content="Anti Afk On",Duration=2})
+        else
+            if antiAfkConn then
+                antiAfkConn:Disconnect()
+                antiAfkConn = nil
+            end
+            WindUI:Notify({Title="Anti AFK",Content="Anti Afk Off",Duration=2})
+        end
+    end
+})
+
+local ThemeTab = Window:Tab({ Title = "Settings", Icon = "settings" })
+ThemeTab:Dropdown({
+    Title  = "Theme",
+    Values = (function() local t={};for n in pairs(WindUI.Themes)do table.insert(t,n)end;return t end)(),
+    Value    = "Dark",
+    Callback = function(s)
+        WindUI:SetTheme(s)
+    end
+})
+ThemeTab:Toggle({
+    Title = "Acrylic",
+    Callback = function()
+        WindUI:ToggleAcrylic(not Window.Acrylic)
+    end
+})
+ThemeTab:Toggle({
+    Title = "Transparent",
+    Callback = function(s)
+        Window:ToggleTransparency(s)
+    end
+})
+
+local currentKey = Enum.KeyCode.RightShift
+ThemeTab:Keybind({
+    Title = "Toggle UI Key",Value = currentKey,
+    Callback = function(v)
+        currentKey=typeof(v)=="EnumItem" and v or Enum.KeyCode.RightShift
+        Window:SetToggleKey(currentKey)
+    end
+})
+
+UserInputService.InputBegan:Connect(function(i)
+    if i.KeyCode==currentKey then Window:Toggle() end
+end)
+
+WindUI:Notify({Title = "鹿脚本",Content = "欢迎玩家🎉!",Duration=2})
+WindUI:SetNotificationLower(true)
