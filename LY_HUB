@@ -19,3 +19,4 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/
 loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/Brain%202"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/blood"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/Gold%2022"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/china2"))()
