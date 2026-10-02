@@ -1,0 +1,422 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/lolssqa/rspy-but-back/releases/download/now/main.lua"))()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local VirtualUser = game:GetService("VirtualUser")
+local LocalPlayer = Players.LocalPlayer
+
+local antiAfkActive = false
+local antiAfkConn
+
+WindUI:AddTheme({
+    Name = "Dark",
+    Accent = Color3.fromHex("#18181b"),
+    Background = Color3.fromHex("#101010"),
+    Outline = Color3.fromHex("#FFFFFF"),
+    Text = Color3.fromHex("#FFFFFF"),
+    Placeholder = Color3.fromHex("#7a7a7a"),
+    Button = Color3.fromHex("#52525b"),
+    Icon = Color3.fromHex("#a1a1aa"),
+})
+
+local Window = WindUI:CreateWindow({
+    Title   = "鹿脚本-举起一个立方体",
+    Author  = "by LY_Team",
+    Folder  = "best",
+    Icon    = "github",
+    Theme   = "Dark",
+    Acrylic = true,
+    Transparent = true,
+    Background = "rbxassetid://84152360484913",
+    Size    = UDim2.fromOffset(680, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    ToggleKey  = Enum.KeyCode.RightShift,
+    Resizable  = true,
+    AutoScale  = true,
+    NewElements = true,
+    BackgroundImageTransparency = 0.65,
+    HideSearchBar = false,
+    ScrollBarEnabled = true,
+    SideBarWidth = 200,
+    Topbar = {
+        Height      = 60,
+        ButtonsType = "Default",
+    },
+    OpenButton = {
+        Title = "鹿脚本-举起一个立方体",
+        Icon = "zap",
+        CornerRadius = UDim.new(1, 0),
+        StrokeThickness = 3,
+        Enabled = true,
+        Draggable = true,
+        OnlyMobile = false,
+        Scale = 1,
+        Color = ColorSequence.new(Color3.fromHex("#000000"),Color3.fromHex("#000000")),
+    },
+    User = {
+        Enabled  = true,
+        Anonymous = false,
+        Callback = function() end,
+    },
+})
+
+local BetaTag = Window:Tag({
+	Title = "Beta",
+	Icon = "",
+	Color = Color3.fromHex("#222222"),
+	Border = true,
+})
+task.spawn(function()
+    local tagFrame = BetaTag.Frame:Wait()
+    local grad = Instance.new("UIGradient")
+    grad.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
+        ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255,255,0)),
+        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(0,255,0)),
+        ColorSequenceKeypoint.new(0.6, Color3.fromRGB(0,180,255)),
+        ColorSequenceKeypoint.new(0.8, Color3.fromRGB(120,0,255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,0)),
+    }
+    grad.Offset = Vector2.new(-1,0)
+    grad.Parent = tagFrame
+    while RunService.RenderStepped:Wait() do
+        grad.Offset += Vector2.new(0.008, 0)
+        if grad.Offset.X>1 then grad.Offset=Vector2.new(-1,0) end
+    end
+end)
+
+local function TeleportToVec(posVec)
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local root = char:WaitForChild("HumanoidRootPart")
+    root.CFrame = CFrame.new(posVec, root.Position)
+end
+
+local targetPlaceId = 132190454395474
+local bestJobId,bestPlayerCount = nil,0
+
+local MainTab = Window:Tab({Title = "Main",Icon = "house"})
+
+MainTab:Space()
+
+MainTab:Section({Title = "防挂机"})
+local AntiAfkButton = MainTab:Toggle({
+    Title = "Anti AFK",
+    Value = false,
+    Callback = function(state)
+        antiAfkActive = state
+        if state then
+            antiAfkConn = LocalPlayer.Idled:Connect(function()
+                VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+                task.wait(1)
+                VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+            end)
+            WindUI:Notify({Title="Anti AFK",Content="Anti Afk On",Duration=2})
+        else
+            if antiAfkConn then
+                antiAfkConn:Disconnect()
+                antiAfkConn = nil
+            end
+            WindUI:Notify({Title="Anti AFK",Content="Anti Afk Off",Duration=2})
+        end
+    end
+})
+
+MainTab:Paragraph({
+    Title = "欢迎使用鹿脚本",
+    Desc = "由鹿言和kxg制作",
+    Image = "info",
+    ImageSize = 24,
+    Thumbnail = "rbxassetid://84687710181215",
+    ThumbnailSize = 64,
+    Color = Color3.fromRGB(100, 200, 255),
+    Buttons = {
+        {
+            Title = "复制快手",
+            Icon = "check",
+            Callback = function()
+                setclipboard("4943010008")
+            end
+        },
+        {
+            Title = "复制QQ群",
+            Icon = "copy",
+            Callback = function()
+                setclipboard("972232322")
+            end
+        }
+    }
+})
+
+local PurchaseTab = Window:Tab({Title = "举起一个立方体",Icon = "package"})
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local remoteEvent
+local function GetRemote()
+    local bridgeNet = ReplicatedStorage:FindFirstChild("ffrostflame_bridgenet2@1.0.0")
+    if not bridgeNet then
+        WindUI:Notify({Title="错误",Content="找不到BridgeNet!",Duration=3})
+        return nil
+    end
+    remoteEvent = bridgeNet:FindFirstChild("dataRemoteEvent")
+    if not remoteEvent then
+        WindUI:Notify({Title="错误",Content="找不到dataRemoteEvent!",Duration=3})
+    end
+    return remoteEvent
+end
+GetRemote()
+
+local materialList = {
+    "Sand",
+    "Wood",
+    "Grass",
+    "Snow",
+    "Rock",
+    "Metal",
+    "Water",
+    "Brick",
+    "Magma",
+    "Candy",
+    "Tiles",
+    "Illusion",
+    "Cards",
+    "Damascus",
+    "Royal"
+}
+local selectedMat = "Grass"
+
+PurchaseTab:Section({Title = "Materials 材料购买"})
+PurchaseTab:Dropdown({
+    Title = "选择材料",
+    Values = materialList,
+    Value = "Grass",
+    Callback = function(val)
+        selectedMat = val
+        WindUI:Notify({Title="已选择",Content=val,Duration=1})
+    end
+})
+PurchaseTab:Button({
+    Title = "点击购买选中材料",
+    Callback = function()
+        if not remoteEvent then GetRemote() end
+        if remoteEvent then
+            local args = {
+                {
+                    {
+                        Function = "RequestPurchase",
+                        Path = "Materials",
+                        Args = {
+                            selectedMat,
+                            1
+                        }
+                    },
+                    "\002"
+                }
+            }
+            remoteEvent:FireServer(unpack(args))
+            WindUI:Notify({Title="发包成功",Content="购买 "..selectedMat,Duration=1})
+        else
+            WindUI:Notify({Title="失败",Content="远程事件不存在",Duration=2})
+        end
+    end
+})
+
+local sendActive = false
+local buyDelay = 0.4
+local packageList = {}
+for i=1,25 do
+    table.insert(packageList,{
+        Function = "RequestPurchase",
+        Path = "Arms",
+        Args = {i,1}
+    })
+end
+
+PurchaseTab:Section({Title = "批量购买发包(1~25)"})
+PurchaseTab:Input({
+    Title = "发包间隔(秒)",
+    Default = "0.4",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then buyDelay = math.clamp(num,0.0000001,10) end
+    end
+})
+PurchaseTab:Toggle({
+    Title = "循环发包",
+    Value = false,
+    Callback = function(state)
+        sendActive = state
+        task.spawn(function()
+            local idx = 1
+            while sendActive do
+                if not remoteEvent then GetRemote() end
+                if remoteEvent then
+                    local pack = packageList[idx]
+                    remoteEvent:FireServer(unpack({{pack,"\002"}}))
+                end
+                idx +=1
+                if idx>25 then idx=1 end
+                task.wait(buyDelay)
+            end
+        end)
+    end
+})
+PurchaseTab:Button({
+    Title = "一次性跑完25条",
+    Callback = function()
+        task.spawn(function()
+            for i=1,25 do
+                if not remoteEvent then GetRemote() end
+                if remoteEvent then
+                    local pack = packageList[i]
+                    remoteEvent:FireServer(unpack({{pack,"\002"}}))
+                end
+                task.wait(buyDelay)
+            end
+        end)
+    end
+})
+
+PurchaseTab:Section({Title = "俯卧撑 CompletePushup"})
+local pushupActive = false
+local pushupDelay = 0.6
+PurchaseTab:Input({
+    Title = "俯卧撑间隔(秒)",
+    Default = "0.6",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then pushupDelay = math.clamp(num,0.0000001,10) end
+    end
+})
+PurchaseTab:Toggle({
+    Title = "循环俯卧撑",
+    Value = false,
+    Callback = function(state)
+        pushupActive = state
+        task.spawn(function()
+            while pushupActive do
+                if not remoteEvent then GetRemote() end
+                if remoteEvent then
+                    local args = {
+                        {
+                            {
+                                Function = "CompletePushup",
+                                Args = {
+                                    1
+                                }
+                            },
+                            "\210\004"
+                        }
+                    }
+                    remoteEvent:FireServer(unpack(args))
+                end
+                task.wait(pushupDelay)
+            end
+        end)
+    end
+})
+PurchaseTab:Button({
+    Title = "单发俯卧撑",
+    Callback = function()
+        if not remoteEvent then GetRemote() end
+        if remoteEvent then
+            local args = {
+                {
+                    {
+                        Function = "CompletePushup",
+                        Args = {
+                            1
+                        }
+                    },
+                    "\210\004"
+                }
+            }
+            remoteEvent:FireServer(unpack(args))
+            WindUI:Notify({Title="发包",Content="俯卧撑数据包已发送",Duration=1})
+        else
+            WindUI:Notify({Title="失败",Content="远程事件不存在",Duration=2})
+        end
+    end
+})
+
+PurchaseTab:Section({Title = "举重 RequestLift"})
+local liftActive = false
+local liftDelay = 0.6
+PurchaseTab:Input({
+    Title = "举重间隔(秒)",
+    Default = "0.6",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then liftDelay = math.clamp(num,0.0000001,10) end
+    end
+})
+PurchaseTab:Toggle({
+    Title = "循环举重",
+    Value = false,
+    Callback = function(state)
+        liftActive = state
+        task.spawn(function()
+            while liftActive do
+                if not remoteEvent then GetRemote() end
+                if remoteEvent then
+                    local args = {{{Function="RequestLift",Args={4,3}},"\r\006"}}
+                    remoteEvent:FireServer(unpack(args))
+                end
+                task.wait(liftDelay)
+            end
+        end)
+    end
+})
+PurchaseTab:Button({
+    Title = "单发举重",
+    Callback = function()
+        if not remoteEvent then GetRemote() end
+        if remoteEvent then
+            local args = {{{Function="RequestLift",Args={4,3}},"\r\006"}}
+            remoteEvent:FireServer(unpack(args))
+            WindUI:Notify({Title="发包",Content="举重数据包已发送",Duration=1})
+        else
+            WindUI:Notify({Title="失败",Content="远程事件不存在",Duration=2})
+        end
+    end
+})
+
+local ThemeTab = Window:Tab({ Title = "Settings", Icon = "settings" })
+ThemeTab:Dropdown({
+    Title  = "Theme",
+    Values = (function() local t={};for n in pairs(WindUI.Themes)do table.insert(t,n)end;return t end)(),
+    Value    = "Dark",
+    Callback = function(s)
+        WindUI:SetTheme(s)
+    end
+})
+ThemeTab:Toggle({
+    Title = "Acrylic",
+    Callback = function()
+        WindUI:ToggleAcrylic(not Window.Acrylic)
+    end
+})
+ThemeTab:Toggle({
+    Title = "Transparent",
+    Callback = function(s)
+        Window:ToggleTransparency(s)
+    end
+})
+
+local currentKey = Enum.KeyCode.RightShift
+ThemeTab:Keybind({
+    Title = "Toggle UI Key",Value = currentKey,
+    Callback = function(v)
+        currentKey=typeof(v)=="EnumItem" and v or Enum.KeyCode.RightShift
+        Window:SetToggleKey(currentKey)
+    end
+})
+
+UserInputService.InputBegan:Connect(function(i)
+    if i.KeyCode==currentKey then Window:Toggle() end
+end)
+
+WindUI:Notify({Title = "鹿脚本",Content = "欢迎玩家🎉!",Duration=2})
+WindUI:SetNotificationLower(true)
