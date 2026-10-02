@@ -1,4 +1,4 @@
-local WindUI = loadstring(game:HttpGet("https://github.com/lolssqa/rspy-but-back/releases/download/now/main.2.lua"))()
+local WindUI = loadstring(game:HttpGet("https://github.com/lolssqa/rspy-but-back/releases/download/now/main.lua"))()
 local FLOW_SPEED = 5.5
 local BORDER_THICKNESS = 1.7
 local FIXED_FONT = Enum.Font.SourceSansBold
