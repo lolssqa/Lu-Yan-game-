@@ -1,0 +1,478 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/lolssqa/rspy-but-back/releases/download/now/main.lua"))()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local VirtualUser = game:GetService("VirtualUser")
+local LocalPlayer = Players.LocalPlayer
+
+local antiAfkActive = false
+local antiAfkConn
+local shootActive = false
+local shootAllPlayer = false
+local shootLoop
+local targetStage = 17
+local katanaTargetSoundId = "rbxassetid://6603295565"
+local katanaImpactSoundId = "rbxassetid://8629066404"
+local katanaSwingSoundId = "rbxassetid://7118966167"
+local katanaDamage = 8
+local katanaLoopDelay = 0.8
+
+WindUI:AddTheme({
+    Name = "Dark",
+    Accent = Color3.fromHex("#18181b"),
+    Background = Color3.fromHex("#101010"),
+    Outline = Color3.fromHex("#FFFFFF"),
+    Text = Color3.fromHex("#FFFFFF"),
+    Placeholder = Color3.fromHex("#7a7a7a"),
+    Button = Color3.fromHex("#52525b"),
+    Icon = Color3.fromHex("#a1a1aa"),
+})
+
+local Window = WindUI:CreateWindow({
+    Title   = "鹿脚本-巴里的监狱逃脱",
+    Author  = "by LY_Team",
+    Folder  = "best",
+    Icon    = "github",
+    Theme   = "Dark",
+    Acrylic = true,
+    Transparent = true,
+    Background = "rbxassetid://84152360484913",
+    Size    = UDim2.fromOffset(680, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    ToggleKey  = Enum.KeyCode.RightShift,
+    Resizable  = true,
+    AutoScale  = true,
+    NewElements = true,
+    BackgroundImageTransparency = 0.65,
+    HideSearchBar = false,
+    ScrollBarEnabled = true,
+    SideBarWidth = 200,
+    Topbar = {
+        Height      = 60,
+        ButtonsType = "Default",
+    },
+    OpenButton = {
+        Title = "鹿脚本-巴里的监狱逃脱",
+        Icon = "zap",
+        CornerRadius = UDim.new(1, 0),
+        StrokeThickness = 3,
+        Enabled = true,
+        Draggable = true,
+        OnlyMobile = false,
+        Scale = 1,
+        Color = ColorSequence.new(Color3.fromHex("#000000"),Color3.fromHex("#000000")),
+    },
+    User = {
+        Enabled  = true,
+        Anonymous = false,
+        Callback = function() end,
+    },
+})
+
+local BetaTag = Window:Tag({
+	Title = "Beta",
+	Icon = "",
+	Color = Color3.fromHex("#222222"),
+	Border = true,
+})
+task.spawn(function()
+    local tagFrame = BetaTag.Frame:Wait()
+    local grad = Instance.new("UIGradient")
+    grad.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
+        ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255,255,0)),
+        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(0,255,0)),
+        ColorSequenceKeypoint.new(0,180,255),
+        ColorSequenceKeypoint.new(0.8, Color3.fromRGB(120,0,0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,0)),
+    }
+    grad.Offset = Vector2.new(-1,0)
+    grad.Parent = tagFrame
+    while RunService.RenderStepped:Wait() do
+        grad.Offset += Vector2.new(0.008, 0)
+        if grad.Offset.X>1 then grad.Offset=Vector2.new(-1,0) end
+    end
+end)
+
+local function TeleportToVec(posVec)
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local root = char:WaitForChild("HumanoidRootPart")
+    root.CFrame = CFrame.new(posVec, root.Position)
+end
+
+local targetPlaceId = 132190454395474
+local bestJobId,bestPlayerCount = nil,0
+
+local MainTab = Window:Tab({Title = "Main",Icon = "house"})
+
+MainTab:Space()
+
+MainTab:Section({Title = "防挂机"})
+local AntiAfkButton = MainTab:Toggle({
+    Title = "Anti AFK",
+    Value = false,
+    Callback = function(state)
+        antiAfkActive = state
+        if state then
+            antiAfkConn = LocalPlayer.Idled:Connect(function()
+                VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+                task.wait(1)
+                VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+            end)
+            WindUI:Notify({Title="Anti AFK",Content="Anti Afk On",Duration=2})
+        else
+            if antiAfkConn then
+                antiAfkConn:Disconnect()
+                antiAfkConn = nil
+            end
+            WindUI:Notify({Title="Anti AFK",Content="Anti Afk Off",Duration=2})
+        end
+    end
+})
+
+MainTab:Section({Title = "炮弹功能"})
+local ShootToggle = MainTab:Toggle({
+    Title = "自动发射FoodZooka",
+    Value = false,
+    Callback = function(state)
+        shootActive = state
+        if state then
+            WindUI:Notify({Title="炮弹",Content="FoodZooka自动发射开启",Duration=2})
+            shootLoop = task.spawn(function()
+                while shootActive do
+                    local char = LocalPlayer.Character
+                    if not char then task.wait() continue end
+                    local root = char:FindFirstChild("HumanoidRootPart")
+                    if not root then task.wait() continue end
+
+                    local targetDir
+                    if shootAllPlayer then
+                        local nearestPlayer
+                        local minDist = math.huge
+                        for _,plr in ipairs(Players:GetPlayers()) do
+                            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                                local enemyRoot = plr.Character.HumanoidRootPart
+                                local dist = (root.Position - enemyRoot.Position).Magnitude
+                                if dist < minDist then
+                                    minDist = dist
+                                    nearestPlayer = enemyRoot
+                                end
+                            end
+                        end
+                        if nearestPlayer then
+                            targetDir = (nearestPlayer.Position - root.Position).Unit
+                        else
+                            targetDir = root.CFrame.LookVector
+                        end
+                    else
+                        targetDir = root.CFrame.LookVector
+                    end
+
+                    local args = {
+	                    {
+		                    "FoodZooka",
+		                    workspace:WaitForChild("godwhy532FoodZooka"),
+		                    game:GetService("ReplicatedStorage"):WaitForChild("ShopAssetsFolder"):WaitForChild("ToolsFolder"):WaitForChild("VipBullets"):WaitForChild("FoodZookaBullets"),
+		                    {
+			                    ReloadTime = 0.4,
+			                    Force = 20,
+			                    BulletSpeed = 100,
+			                    Damage = 10
+		                    },
+		                    targetDir,
+		                    {
+			                    ReloadTime = 0.4,
+			                    Force = 20,
+			                    BulletSpeed = 100,
+			                    Damage = 10
+		                    },
+		                    false
+	                    }
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("ShopAssetsFolder"):WaitForChild("AssetRemotes"):WaitForChild("VipRemotes"):WaitForChild("SendProjectile"):FireServer(unpack(args))
+                    task.wait(0.4)
+                end
+            end)
+        else
+            if shootLoop then
+                task.cancel(shootLoop)
+                shootLoop = nil
+            end
+            WindUI:Notify({Title="炮弹",Content="FoodZooka自动发射关闭",Duration=2})
+        end
+    end
+})
+
+local AimAllPlayerToggle = MainTab:Toggle({
+    Title = "瞄准最近玩家",
+    Value = false,
+    Callback = function(state)
+        shootAllPlayer = state
+        if state then
+            WindUI:Notify({Title="炮弹模式",Content="切换为瞄准最近玩家",Duration=2})
+        else
+            WindUI:Notify({Title="炮弹模式",Content="切换为自身前方",Duration=2})
+        end
+    end
+})
+
+MainTab:Section({Title = "领取工具"})
+local toolList = {
+    "OfficerNugget",
+    "MonsterTrolley",
+    "BlackHole",
+    "ChickenMorph",
+    "SuperFoodZooka",
+    "DohZooka",
+    "FlyingCarpet",
+    "GhostMode",
+    "IceBow",
+    "PlayerVacuum",
+    "SpeedCola",
+    "GravityCola",
+    "Taser",
+    "GodBlaster",
+    "JetPack",
+    "Grapple",
+    "ChickenTool",
+    "UFOTool",
+    "ZombieTool",
+    "FlameBaton",
+    "ClassicBaton",
+    "IceBaton",
+    "FairyBaton",
+    "SciFiBaton",
+    "JusticeBaton",
+    "Baton",
+    "BoltBaton",
+    "BaconBaton",
+    "GymBaton",
+    "PaintCan",
+    "FlameSword",
+    "WaterBalloon",
+    "FoodZooka",
+    "Segway",
+    "Pillow",
+    "ToiletPaper",
+    "Box",
+    "FireExtinguisher",
+    "Katana",
+    "BasicBaton",
+    "SciBaton",
+    "SkiBarry",
+    "Telekineses",
+}
+local targetTool = toolList[1]
+
+MainTab:Dropdown({
+    Title = "选择工具",
+    Values = toolList,
+    Value = toolList[1],
+    Callback = function(selected)
+        targetTool = selected
+        WindUI:Notify({Title="工具已选中",Content="当前："..selected,Duration=1.5})
+    end
+})
+
+MainTab:Button({
+    Title = "领取工具",
+    Callback = function()
+        local args = {
+	        targetTool,
+	        true,
+	        true
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("ShopAssetsFolder"):WaitForChild("AssetRemotes"):WaitForChild("SendTool"):FireServer(unpack(args))
+        WindUI:Notify({Title="领取工具",Content="已发送工具指令: "..targetTool,Duration=2})
+    end
+})
+
+MainTab:Section({Title = "Katana全图打击"})
+local TargetSoundInput = MainTab:Input({
+    Title = "TargetSound音效",
+    Placeholder = "rbxassetid://6603295565",
+    Value = "rbxassetid://6603295565",
+    Callback = function(text)
+        katanaTargetSoundId = text
+    end
+})
+
+local ImpactSoundInput = MainTab:Input({
+    Title = "ImpactSound音效",
+    Placeholder = "rbxassetid://8629066404",
+    Value = "rbxassetid://8629066404",
+    Callback = function(text)
+        katanaImpactSoundId = text
+    end
+})
+
+local SwingSoundInput = MainTab:Input({
+    Title = "SwingSound音效",
+    Placeholder = "rbxassetid://7118966167",
+    Value = "rbxassetid://7118966167",
+    Callback = function(text)
+        katanaSwingSoundId = text
+    end
+})
+
+local DamageInput = MainTab:Input({
+    Title = "伤害Damage",
+    Placeholder = "8",
+    Value = "8",
+    Callback = function(text)
+        katanaDamage = tonumber(text) or 8
+    end
+})
+
+local SpeedInput = MainTab:Input({
+    Title = "循环间隔(速度)",
+    Placeholder = "0.8",
+    Value = "0.8",
+    Callback = function(text)
+        katanaLoopDelay = tonumber(text) or 0.8
+    end
+})
+
+local KatanaAllToggle = MainTab:Toggle({
+    Title = "Katana全图打击",
+    Value = false,
+    Callback = function(state)
+        local Players = game:GetService("Players")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local hitRemote = ReplicatedStorage:WaitForChild("ShopAssetsFolder"):WaitForChild("AssetRemotes"):WaitForChild("BatonRemotes"):WaitForChild("HitRemote")
+        if state then
+            task.spawn(function()
+                while state do
+                    for _,plr in ipairs(Players:GetPlayers()) do
+                        if plr ~= game.Players.LocalPlayer and plr.Character then
+                            local humRoot = plr.Character:FindFirstChild("HumanoidRootPart")
+                            if humRoot then
+                                local args = {
+                                    "Katana",
+                                    humRoot.Position,
+                                    {
+                                        TargetSound = {
+                                            katanaTargetSoundId
+                                        },
+                                        HasIdleVFX = false,
+                                        DefaultDamage = katanaDamage,
+                                        Damage = katanaDamage,
+                                        AnimationName = "WeaponAnimation",
+                                        Name = "Katana",
+                                        BlockDamage = 5,
+                                        ImpactSound = {
+                                            katanaImpactSoundId
+                                        },
+                                        Force = 10,
+                                        SwingSound = katanaSwingSoundId,
+                                        LoopSound = false
+                                    },
+                                    false,
+                                    false,
+                                    false,
+                                    false
+                                }
+                                hitRemote:FireServer(unpack(args))
+                            end
+                        end
+                    end
+                    task.wait(katanaLoopDelay)
+                end
+            end)
+        end
+    end
+})
+
+MainTab:Section({Title = "关卡切换"})
+local StageInput = MainTab:Input({
+    Title = "目标关卡数字",
+    Placeholder = "输入关卡，默认17",
+    Value = "17",
+    Callback = function(text)
+        targetStage = tonumber(text) or 17
+    end
+})
+
+MainTab:Button({
+    Title = "切换到目标关卡",
+    Callback = function()
+        local args = {targetStage}
+        game:GetService("ReplicatedStorage"):WaitForChild("RemoteEventsFolder"):WaitForChild("StageChange"):FireServer(unpack(args))
+        WindUI:Notify({Title="关卡",Content="已发送关卡指令: "..targetStage,Duration=2})
+    end
+})
+
+MainTab:Button({
+    Title = "传送到终点，",
+    Callback = function()
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+        root.CFrame = CFrame.new(115.2, 103.2, -141.4)
+    end
+})
+
+MainTab:Paragraph({
+    Title = "欢迎使用鹿脚本",
+    Desc = "由鹿言和kxg制作",
+    Image = "info",
+    ImageSize = 24,
+    Thumbnail = "rbxassetid://84687710181215",
+    ThumbnailSize = 64,
+    Color = Color3.fromRGB(100, 200, 255),
+    Buttons = {
+        {
+            Title = "复制快手",
+            Icon = "check",
+            Callback = function()
+                setclipboard("4943010008")
+            end
+        },
+        {
+            Title = "复制QQ群",
+            Icon = "copy",
+            Callback = function()
+                setclipboard("972232322")
+            end
+        }
+    }
+})
+
+local ThemeTab = Window:Tab({ Title = "Settings", Icon = "settings" })
+ThemeTab:Dropdown({
+    Title  = "Theme",
+    Values = (function() local t={};for n in pairs(WindUI.Themes)do table.insert(t,n)end;return t end)(),
+    Value    = "Dark",
+    Callback = function(s)
+        WindUI:SetTheme(s)
+    end
+})
+ThemeTab:Toggle({
+    Title = "Acrylic",
+    Callback = function()
+        WindUI:ToggleAcrylic(not Window.Acrylic)
+    end
+})
+ThemeTab:Toggle({
+    Title = "Transparent",
+    Callback = function(s)
+        Window:ToggleTransparency(s)
+    end
+})
+
+local currentKey = Enum.KeyCode.RightShift
+ThemeTab:Keybind({
+    Title = "Toggle UI Key",Value = currentKey,
+    Callback = function(v)
+        currentKey=typeof(v)=="EnumItem" and v or Enum.KeyCode.RightShift
+        Window:SetToggleKey(currentKey)
+    end
+})
+
+UserInputService.InputBegan:Connect(function(i)
+    if i.KeyCode==currentKey then Window:Toggle() end
+end)
+
+WindUI:Notify({Title = "鹿脚本",Content = "欢迎玩家🎉!",Duration=2})
