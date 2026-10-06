@@ -22,3 +22,4 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/
 loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/china2"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/Weightlifting%20Fairy"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/Paris%20Prison%202"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/lolssqa/Lu-Yan-game-/refs/heads/main/egg2"))()
